@@ -9,28 +9,26 @@ const todos = [
 ];
 
 export class TodosController {
+  todoRepository: any;
   //* DI
   constructor() {}
 
   public getTodos = async (req: Request, res: Response) => {
-    const todos = await prisma.todo.findMany();
+    const todos = await this.todoRepository.getAll();
+    console.log(todos);
     return res.json(todos);
   };
 
   public getTodoById = async (req: Request, res: Response) => {
     const id = +req.params.id;
-    if (isNaN(id))
-      return res.status(400).json({ error: "ID argument is not a number" });
+    const tod = this.todoRepository.findById(id);
 
-    const todoById = await prisma.todo.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    todoById
-      ? res.json(todoById)
-      : res.status(404).json({ error: `TODO with id ${id} not found` });
+    try{
+      const todo = await this.todoRepository.findById(id);
+      res.json(todo);
+    }catch(){
+      res.status(404).json({error: `Todo with id ${id} not found`});
+    }
   };
 
   public createTodo = async (req: Request, res: Response) => {
